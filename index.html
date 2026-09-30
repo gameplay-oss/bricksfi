@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1, viewport-fit=cover">
+<title>BricksFi — Own a piece of real estate</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="stage"><div id="app"></div></div>
+<div id="err" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#7f1d1d;color:#fff;font:12px monospace;padding:8px;z-index:999;white-space:pre-wrap"></div>
+<script src="./data.js"></script>
+<script src="./app.js"></script>
+<script>
+window.addEventListener('error',function(e){var d=document.getElementById('err');d.style.display='block';d.textContent+='\n'+(e.message||e.error);});
+</script>
+</body>
+</html>
