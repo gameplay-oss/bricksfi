@@ -4,7 +4,7 @@ const fmt=n=>"₦"+Number(n||0).toLocaleString("en-NG");
 const fee=a=>Math.round((+a||0)*0.015);
 const pct=(a,b)=>b?((a/b)*100):0;
 let S=null; try{S=JSON.parse(localStorage.getItem("bricksfi_v1"))}catch(e){}
-S=S||{user:null,kyc:"Not Started",balance:500000,invests:[],txns:[{id:1,t:"Wallet funded • Bank transfer",a:500000,d:"Today",s:"Success",cat:"Deposit"}],lessons:{},notifs:[{t:"Welcome to BricksFi",d:"Explore verified properties in Lagos & Accra.",time:"Today"}],payMethods:[{n:"GTBank •• 4521",d:"Bank"}],twoFA:false,bio:false};
+S=S||{user:null,kyc:"Not Started",balance:500000,invests:[],txns:[{id:1,t:"Wallet funded • Bank transfer",a:500000,d:"Today",s:"Success",cat:"Deposit"}],lessons:{},wallet:null,light:false,notifs:[{t:"Welcome to BricksFi",d:"Explore verified properties in Lagos & Accra.",time:"Today"}],payMethods:[{n:"GTBank •• 4521",d:"Bank"}],twoFA:false,bio:false};
 function save(){localStorage.setItem("bricksfi_v1",JSON.stringify(S))}
 let R={route:"splash",params:{},cat:"All",q:"",fMin:"",fMax:"",fYield:"",fStatus:"",pay:"Wallet balance",showF:false,seg:"avail",payM:0};
 window.go=(r,p={})=>{R.route=r;R.params=p;render();const ph=$(".phone");if(ph)ph.scrollTop=0;window.scrollTo(0,0)};
@@ -15,7 +15,7 @@ function initials(){if(!S.user||!S.user.name)return"B";return S.user.name.replac
 
 /* ---------- chrome ---------- */
 function nav(on){
-  const it=[["home","⌂","Home"],["marketplace","⊕","List"],["learn","🎓","Learn"],["portfolio","◑","Portfolio"]];
+  const it=[["home","⌂","Home"],["wallet","▤","Wallet"],["learn","🎓","Learn"],["portfolio","◑","Portfolio"]];
   return `<div class="nav">${it.map(([k,i,l])=>`<button class="${on===k?"on":""}" onclick="go('${k}')"><span class="ic">${i}</span>${l}</button>`).join("")}<div class="homebar"></div></div>`;
 }
 function flag(c){return c==="Ghana"?"🇬🇭":"🇳🇬"}
@@ -30,22 +30,40 @@ function topbar(showFilter){
 function vSplash(){setTimeout(()=>go(S.user?(S.kyc==="Approved"?"home":"kyc"):"onboard"),1100);
 return `<div class="phone"><div class="screen"><div class="splash"><div class="logo">🧱</div><h1 style="color:#fff;margin:0">BricksFi</h1><p style="color:#C8D5CF">Real Estate. Fractionalized.<br>Accessible.</p><div class="small mono" style="color:#8FB3A5">loading…</div></div></div></div>`}
 
+function fanHTML(){const f=[{c:"f1",p:PROPERTIES[1],tag:"High yield"},{c:"f2",p:PROPERTIES[3],tag:"Prime"},{c:"f3",p:PROPERTIES[0],tag:"Capital growth"}];
+return `<div class="fan">${f.map(x=>`<div class="fancard ${x.c}"><div class="t">${x.p.name}</div><div class="s">${x.p.city}, ${x.p.country}</div><img src="${x.p.img}"><div class="tag">${x.tag}</div></div>`).join("")}</div>`}
 function vOnboard(){const s=R.params.s||0;const steps=[
-{t:"Discover",e:"🏘️",d:"Explore verified property opportunities across Africa with valuation, yield and documents."},
-{t:"Invest",e:"🧩",d:"Purchase fractions from ₦25,000. Own tokens, track ownership % from your phone."},
-{t:"Earn",e:"📈",d:"Track eligible income, property performance and distributions in one portfolio."}];
+{i:"📊",t:"Track your investment returns easily.",d:"Monitor your investment performance."},
+{i:"💰",t:"Earn rental income from properties.",d:"Receive token-based rental income."},
+{i:"🧩",t:"Own fractions of premium assets.",d:"Start from ₦25,000 per token."}];
 const c=steps[s];
-return `<div class="phone"><div class="screen"><div class="card mt center" style="padding:32px 20px"><div style="font-size:56px">${c.e}</div><h1>${c.t}</h1><p class="muted">${c.d}</p><div class="dots">${steps.map((_,i)=>`<i class="${i===s?"on":""}"></i>`).join("")}</div>
-${s<2?`<button class="btn btn-p" onclick="go('onboard',{s:${s+1}})">Next</button>`:`<button class="btn btn-p" onclick="go('auth')">Get Started</button>`}
-<div class="small muted mt2" onclick="go('auth')" style="cursor:pointer">Skip</div></div></div></div>`}
+return `<div class="phone"><div class="screen"><div style="text-align:right"><span class="small muted" onclick="go('auth')" style="cursor:pointer">Skip</span></div>
+${fanHTML()}
+<h1 class="center" style="font-size:27px">Investing in real<br>estate made simple</h1>
+<p class="center muted" style="font-size:15px">Buy property tokens and start owning shares of premium real estate.</p>
+<div class="infowhite"><div class="ii">${c.i}</div><div><b>${c.t}</b><div>${c.d}</div></div></div>
+<div class="dots">${steps.map((_,i)=>`<i class="${i===s?"on":""}"></i>`).join("")}</div>
+${s<2?`<button class="btn-white" onclick="go('onboard',{s:${s+1}})">Next &nbsp;›</button>`:`<button class="btn-white" onclick="go('auth',{m:'login'})">Sign in</button>`}
+<div class="center small muted mt">Don't have an account? <span class="linklike" onclick="go('auth',{m:'signup'})">Sign up</span></div>
+<div class="homebar" style="margin-top:22px"></div></div></div>`}
 
-function vAuth(){const m=R.params.m||"signup";
-return `<div class="phone"><div class="screen"><h1>Welcome to<br>BricksFi</h1><p class="muted small">Own a fraction of African real estate from ₦25,000.</p>
-<div class="tabs"><button class="${m==="signup"?"on":""}" onclick="go('auth',{m:'signup'})">Sign up</button><button class="${m==="login"?"on":""}" onclick="go('auth',{m:'login'})">Log in</button></div>
-${m==="signup"?`<label>Full name</label><input id="n" value="Adaeze Okafor"><label>Email</label><input id="e" value="ada@example.com"><label>Phone</label><input id="p" value="+234 801 234 5678"><label>Country</label><select><option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>UK</option></select><label>Password</label><input id="pw" type="password" value="password123"><button class="btn btn-p mt" onclick="doSignup()">Create account</button>`:`<label>Email</label><input id="e" value="ada@example.com"><label>Password</label><input type="password" value="password123"><button class="btn btn-p mt" onclick="doLogin()">Log in</button><div class="small muted center mt2">Biometric login available after setup</div>`}
-<div class="banner green mt">🔒 Regulated flow: KYC required before investing. Projections are not guarantees.</div></div></div>`}
-window.doSignup=()=>{const n=$("#n").value||"Investor";S.user={name:n.startsWith("@")?n:"@"+n.split(" ")[0].toLowerCase(),full:n};save();notify("Account created","Verify identity to unlock investing.");go("kyc")};
-window.doLogin=()=>{if(!S.user)S.user={name:"@adaeze",full:"Adaeze Okafor"};save();go(S.kyc==="Approved"?"home":"kyc")};
+function vAuth(){const m=R.params.m||"signup";const pw=R.showPw?"text":"password";
+const fields=m==="signup"
+?`<label style="color:#fff">Full name</label><input id="n" class="field" value="Kolawole Victor Ojerinde"><label style="color:#fff">Email Address</label><input id="e" class="field" value="ojerindekolawole3@gmail.com"><label style="color:#fff">Password</label><input id="pw" class="field" type="${pw}" value="password123">`
+:`<label style="color:#fff">Email Address</label><input id="e" class="field" value="ojerindekolawole3@gmail.com"><label style="color:#fff">Password</label><input id="pw" class="field" type="${pw}" value="password123">`;
+return `<div class="phone"><div style="padding:26px 16px 0;filter:blur(7px);opacity:.75;pointer-events:none">${fanHTML()}</div>
+<div class="sheetwrap" style="position:absolute"><div class="sheet"><div class="notch"></div>
+<h1>${m==="signup"?"Create account":"Sign in to BricksFi"}</h1><div class="dash"></div>
+<div class="sub2">${m==="signup"?"Please enter your details to create an account":"Please enter your details to sign in"}</div>
+<div class="mt">${fields}</div>
+${m==="login"?`<div class="small mt">Forgot Password &nbsp;<span class="linklike" onclick="toast('Reset link sent')">Reset</span></div>`:""}
+<button class="btn-white mt" onclick="${m==="signup"?"doSignup()":"doLogin()"}">${m==="signup"?"Create account":"Sign in"}</button>
+<div class="or">OR</div>
+<button class="gbtn" onclick="toast('Google sign-in (demo)');doLogin()"><span style="font-weight:800">G</span> with Google</button>
+<div class="center small muted mt">${m==="signup"?"Already have an account? <span class='linklike' onclick=\"go('auth',{m:'login'})\">Sign in</span>":"Don't have an account? <span class='linklike' onclick=\"go('auth',{m:'signup'})\">Sign up</span>"}</div>
+<div class="homebar"></div></div></div></div>`}
+window.doSignup=()=>{const n=($("#n")||{}).value||"Kolawole Victor Ojerinde";const e=(($("#e")||{}).value||"").trim();S.user={name:"@"+(e?e.split("@")[0]:"kolawole"),full:n,email:e};save();notify("Account created","Verify identity to unlock investing.");go("kyc")};
+window.doLogin=()=>{const e=(($("#e")||{}).value||"").trim();if(!S.user)S.user={name:"@"+(e?e.split("@")[0]:"kolawole"),full:"Kolawole Victor Ojerinde",email:e};save();go(S.kyc==="Approved"?"home":"kyc")};
 
 function vKyc(){const st=S.kyc;const step=R.params.step||0;
 const bar=`<div class="steps"><i class="on"></i><i class="${step>0||st!=="Not Started"?"on":""}"></i><i class="${step>1||st==="Approved"?"on":""}"></i></div>`;
@@ -166,6 +184,7 @@ function vWallet(){const t=totals();
 return `<div class="phone">${topbar()}<div class="screen">
 <div class="hero-card"><div class="small" style="color:#C8D5CF">Available balance</div><div class="bal">${fmt(S.balance)}</div><div class="sub">Invested ${fmt(t.inv)} • Pending ₦0</div><div class="row mt"><button class="btn btn-gold" onclick="go('deposit')">Deposit</button><button class="btn btn-w" onclick="go('withdraw')">Withdraw</button></div></div>
 <div class="tabs"><button class="on">Transactions</button><button onclick="go('txns')">See all</button></div>
+<div class="card mt"><b>🔗 ${S.wallet?"Wallet connected":"Connect wallet"}</b><div class="small muted">${S.wallet?S.wallet.provider+" linked ✓":"MetaMask • WalletConnect • Trust Wallet"}</div><button class="btn btn-soft mt" onclick="R.sheet='connect';R.walletOpt=(S.wallet&&S.wallet.provider)||'Trust Wallet';render()">${S.wallet?"Switch wallet":"Connect wallet"}</button></div>
 ${S.txns.slice(0,8).map(x=>`<div class="txn"><div class="ic">${x.a<0?"📤":"📥"}</div><div style="flex:1"><b style="font-size:13px">${x.t}</b><div class="tiny muted">${x.d} • ${x.s} • ${x.cat||""}</div></div><b style="font-size:13px" class="${x.a<0?"":"up"}">${x.a<0?"-":"+"}${fmt(Math.abs(x.a)).slice(1)===""?"":fmt(Math.abs(x.a))}</b></div>`).join("")}
 </div>${nav("wallet")}</div>`}
 function vDeposit(){const s=R.params.s||0;
@@ -180,12 +199,20 @@ function vTxns(){return `<div class="phone"><div class="screen"><div class="smal
 function vLearn(){return `<div class="phone">${topbar()}<div class="screen"><div class="chips">${["All","Real Estate","Tokenization","Investing","Platform"].map(c=>`<div class="chip" onclick="toast('${c}')">${c}</div>`).join("")}</div>${LESSONS.map(l=>`<div class="tok" onclick="go('lesson',{id:'${l.id}'})"><div class="file" style="width:48px;height:48px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center">📚</div><div class="n"><b>${l.title}</b><div class="small muted">${l.cat} • ${l.mins} min ${S.lessons[l.id]?"• ✓ read":""}</div></div><span>›</span></div>`).join("")}</div>${nav("learn")}</div>`}
 function vLesson(){const l=LESSONS.find(x=>x.id===R.params.id);return `<div class="phone"><div class="screen"><div class="small" onclick="go('learn')">‹ Learn</div><span class="pill gold">${l.cat} • ${l.mins} min</span><h1>${l.title}</h1><div class="card">${l.body}</div><div class="banner green mt">Never invest in what you don't understand. What you own, how you earn, risks, fees, exit — all on the asset page.</div><button class="btn btn-p mt" onclick="S.lessons['${l.id}']=1;save();go('marketplace')">Explore opportunities</button></div></div>`}
 function vNotifs(){return `<div class="phone"><div class="screen"><div class="small" onclick="go('home')">‹ Home</div><h1>Notifications</h1>${S.notifs.map(n=>`<div class="card mt"><b>${n.t}</b><div class="small muted">${n.d} • ${n.time}</div></div>`).join("")}</div></div>`}
-function vProfile(){return `<div class="phone">${topbar()}<div class="screen">
-<div class="card"><div class="row" style="align-items:center"><div class="avatar" style="width:48px;height:48px">${initials()}</div><div><b>${S.user?S.user.full:"Guest"}</b><div class="small muted">${S.user?S.user.name:""} • ${S.kyc}</div></div></div></div>
+function initials2(){const f=S.user?(S.user.full||S.user.name):"Kolawole Ojerinde";const p=String(f).replace(/^@/,"").split(" ");return ((p[0]||"K")[0]+(p[p.length-1]||"O")[0]).toUpperCase()}
+function vProfile(){const full=S.user?(S.user.full||S.user.name):"Kolawole Victor Ojerinde";
+return `<div class="phone">${topbar()}<div class="screen">
+<div class="pagetitle"><span class="back" onclick="go('home')">‹</span>Profile</div>
+<div class="acctcard" onclick="go('profileEdit')"><div class="ko">${initials2()}</div><div style="flex:1"><b style="font-size:17px">${full}</b><div class="small muted">Your account and details</div></div><span>›</span></div>
+<div class="mt">
+<div class="prow" onclick="go('security')"><div class="picon">🔒</div><div class="pt"><b>Security & Privacy</b><div>Biometrics, 2FA and password</div></div><span>›</span></div>
+<div class="prow" onclick="go('about')"><div class="picon">ⓘ</div><div class="pt"><b>About BrickFi</b><div>What we do and how it works</div></div><span>›</span></div>
+<div class="prow" onclick="go('support')" style="border:0"><div class="picon">?</div><div class="pt"><b>Help</b><div>FAQs and contact support</div></div><span>›</span></div>
+</div>
 <div class="card mt"><b>Account</b>${[["Personal info","profileEdit"],["Verification — "+S.kyc,"kyc"],["Payment methods","pay"],["Documents & statements","docs"]].map(([t,r])=>`<div class="doc" onclick="go('${r}')"><div style="flex:1">${t}</div><span>›</span></div>`).join("")}</div>
-<div class="card mt"><b>Security</b><div class="kv"><span>Biometrics</span><b onclick="S.bio=!S.bio;save();render()" style="cursor:pointer">${S.bio?"On ✓":"Off"}</b></div><div class="kv"><span>2FA</span><b onclick="S.twoFA=!S.twoFA;save();render()" style="cursor:pointer">${S.twoFA?"On ✓":"Off"}</b></div><div class="doc" onclick="toast('Password reset link sent')"><div style="flex:1">Change password</div><span>›</span></div></div>
-<div class="card mt"><b>Support</b><div class="doc" onclick="go('support')"><div style="flex:1">Help center & FAQs</div><span>›</span></div><div class="doc" onclick="toast('Chat opening…')"><div style="flex:1">Contact support</div><span>›</span></div></div>
-<button class="btn btn-soft mt" onclick="localStorage.removeItem('bricksfi_v1');location.reload()">Log out (reset demo)</button>
+<h3 style="margin-top:22px">Dark mode</h3>
+<div class="prow" style="border:0"><div class="pt"><b>Follow system preferences</b><div>Dark mode on BrickFi will be applied according to your device's appearance</div></div><div class="switch ${S.light?"":"on"}" onclick="S.light=!S.light;save();render()"></div></div>
+<button class="btn btn-red mt" onclick="localStorage.removeItem('bricksfi_v1');location.reload()">Log out</button>
 </div>${nav("profile")}</div>`}
 function vSecondary(){return `<div class="phone"><div class="screen"><div class="small" onclick="go('marketplace')">‹ Market</div><h1>Secondary market</h1><div class="banner">Liquidity is not guaranteed. Sales need buyers. Demo prices only.</div>${SECONDARY.map((s,i)=>{const p=PROPERTIES.find(x=>x.id===s.propId);return `<div class="card mt"><b>${p.name} • ${s.units} units</b><div class="small muted">${fmt(s.pricePer)}/token by ${s.seller}</div><button class="btn btn-p mt" onclick="toast('Offer sent to seller')">Make offer</button></div>`}).join("")}</div></div>`}
 function vSell(){const v=S.invests.find(x=>x.id==R.params.id);if(!v)return vPort();const p=PROPERTIES.find(x=>x.id===v.propId);
@@ -205,9 +232,14 @@ else if(r==="learn")h=vLearn();else if(r==="lesson")h=vLesson();else if(r==="not
 else if(r==="profile")h=vProfile();else if(r==="secondary")h=vSecondary();else if(r==="sell")h=vSell();
 else if(r==="search")h=vSearch();
 else if(r==="pay")h=`<div class="phone"><div class="screen"><div class="small" onclick="go('profile')">‹</div><h1>Payment methods</h1>${S.payMethods.map(m=>`<div class="card mt"><b>${m.n}</b><div class="small muted">${m.d}</div></div>`).join("")}<button class="btn btn-soft mt" onclick="S.payMethods.push({n:'New bank •• '+(1000+Math.floor(Math.random()*9000)),d:'Bank'});save();render()">+ Add bank</button></div></div>`;
+else if(r==="security")h=`<div class="phone"><div class="screen"><div class="pagetitle"><span class="back" onclick="go('profile')">‹</span>Security & Privacy</div><div class="card mt"><div class="kv"><span>Biometrics</span><b onclick="S.bio=!S.bio;save();render()" style="cursor:pointer">${S.bio?"On ✓":"Off"}</b></div><div class="kv"><span>2FA</span><b onclick="S.twoFA=!S.twoFA;save();render()" style="cursor:pointer">${S.twoFA?"On ✓":"Off"}</b></div><div class="doc" onclick="toast('Password reset link sent')"><div style="flex:1">Change password</div><span>›</span></div><div class="kv"><span>KYC</span><b>${S.kyc}</b></div></div></div></div>`;
+else if(r==="about")h=`<div class="phone"><div class="screen"><div class="pagetitle"><span class="back" onclick="go('profile')">‹</span>About BrickFi</div><div class="card mt"><b>Fractional African real estate</b><p class="small muted">BricksFi lets eligible users own fractions of verified properties from ₦25,000 — with valuations, documents, income tracking and a secondary market where supported. Projections are not guarantees.</p></div></div></div>`;
 else if(r==="docs")h=`<div class="phone"><div class="screen"><div class="small" onclick="go('profile')">‹</div><h1>Documents</h1><div class="card">${S.invests.map(v=>{const p=PROPERTIES.find(x=>x.id===v.propId);return `<div class="doc"><div class="file">📄</div><div style="flex:1"><b>SPV certificate — ${p.name}</b><div class="tiny muted">${v.tx} • ${v.units} units</div></div></div>`}).join("")||"No investment documents yet."}</div></div></div>`;
 else if(r==="support")h=`<div class="phone"><div class="screen"><div class="small" onclick="go('profile')">‹</div><h1>Help center</h1><div class="card"><b>How do I exit?</b><div class="small muted">Via secondary market where supported. No guarantee of buyers.</div></div><div class="card mt"><b>When are payouts?</b><div class="small muted">Rental assets pay quarterly/monthly per asset page.</div></div><div class="card mt"><b>What do tokens represent?</b><div class="small muted">Beneficial interest in the SPV that owns the property.</div></div></div></div>`;
 else if(r==="profileEdit")h=`<div class="phone"><div class="screen"><div class="small" onclick="go('profile')">‹</div><h1>Personal info</h1><label>Full name</label><input id="fn" value="${S.user?S.user.full:""}"><button class="btn btn-p mt" onclick="S.user.full=document.querySelector('#fn').value;save();go('profile')">Save</button></div></div>`;
 else h=vHome();
-el.innerHTML=h.replace('<div class="phone">','<div class="phone"><div class="statusbar"><span>9:41</span><span class="sicons">📶&nbsp;&nbsp;🔋</span></div>')}
+el.innerHTML=h.replace('<div class="phone">','<div class="phone"><div class="statusbar"><span>9:41</span><span class="sicons">📶&nbsp;&nbsp;🔋</span></div>');
+document.body.classList.toggle("light",!!S.light);
+if(R.sheet==="connect"){const opts=["MetaMask","WalletConnect","Trust Wallet"];const ic={MetaMask:"🦊",WalletConnect:"🔵","Trust Wallet":"🛡️"};
+el.innerHTML+=`<div class="sheetwrap" onclick="if(event.target===this){R.sheet=null;render()}"><div class="sheet"><div class="notch"></div><h1>Connect Wallet</h1><div class="dash"></div><div class="sub2">Select a wallet to connect</div><div class="mt">${opts.map(o=>`<div class="wrow ${R.walletOpt===o?"sel":""}" onclick="R.walletOpt='${o}';render()"><div class="wic">${ic[o]}</div>${o}<div class="radio">${R.walletOpt===o?"✓":""}</div></div>`).join("")}</div><button class="btn-white mt" onclick="const w=R.walletOpt;S.wallet={provider:w};save();R.sheet=null;notify('Wallet connected',w+' linked.');go('wallet')">Connect</button><div class="center small muted mt" onclick="R.sheet=null;go('wallet')" style="cursor:pointer">Skip</div><div class="homebar"></div></div></div>`}}
 render();
